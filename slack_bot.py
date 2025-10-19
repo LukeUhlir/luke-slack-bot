@@ -1,14 +1,22 @@
 import slack
 import os
+import re
 from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask
 from slackeventsapi import SlackEventAdapter
 
+def prepForModeration(word):
+    split_word = re.split("\d*|\W*", word)
+    new_word = "".join(split_word)
+    final_word = new_word.lower()
+    return final_word
+
 def containsNaughtyWord(word):
+    new_word = prepForModeration(word)
     naughtyWords = ["shit", "fuck", "nigger", "faggot", "fuk", "fuc" ]
     for swear_word in naughtyWords:
-        result = word.find(swear_word)
+        result = new_word.find(swear_word)
         if result != -1:
             return result
 
