@@ -38,7 +38,6 @@ def message(payload):
             client.chat_postMessage(channel='#bot-logs', text=("Message Deleted: " + text +"\n"+user_id))
         else:
             text = event.get('text')
-            print(containsNaughtyWord(text))
             if containsNaughtyWord(text) != None:
                 ts = event.get('ts')
                 client.chat_postMessage(channel='#bot-logs', text="Bad message detected")
