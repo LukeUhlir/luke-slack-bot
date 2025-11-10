@@ -6,12 +6,15 @@ from dotenv import load_dotenv
 from flask import Flask, request, Response
 from slackeventsapi import SlackEventAdapter
 
+
+# cuts out the white space of a word by splitting it using Regular Expressions
 def prepForModeration(word):
     split_word = re.split("\d*|\W*", word)
     new_word = "".join(split_word)
     final_word = new_word.lower()
     return final_word
 
+#checks for any of the words in the array and returns something that isn't -1 if it finds it
 def containsNaughtyWord(word):
     new_word = prepForModeration(word)
     naughtyWords = ["shit", "fuck", "nigger", "faggot", "fuk", "fuc" ]
@@ -20,18 +23,17 @@ def containsNaughtyWord(word):
         if result != -1:
             return result
 
+# Logs into Slack as an admin to delete messages
 def deleteMessage(channel_id, time_stamp):
     admin_client = slack.WebClient(token=os.environ['ADMIN_TOKEN'])
     admin_client.chat_delete(channel=channel_id, ts=time_stamp)
 
+# Searches a message string for the USER ID of the user mentioned
 def findUserID(string):
     index = string.find("@")
     user_id = string[index+1:index+11]
     return user_id
 
-def normalPill(team_number, evil_user):
-    admin_client = slack.WebClient(token=os.environ['ADMIN_TOKEN'])
-    admin_client.admin_users_setRegular(team_id=team_number, user_id=evil_user)
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -77,14 +79,6 @@ def message_count():
     message_count = message_counts.get(user_id, 0)
 
     client.chat_postMessage(channel=channel_id, text=f"Message: {message_count}")
-    return Response(), 200
-
-@app.route('/unmod', methods=['POST'])
-def unmod():
-    data = request.form
-    user_id = findUserID(data.get('text'))
-    team_id = data.get('team_id')
-    normalPill(team_id, user_id)
     return Response(), 200
 
 if __name__ == "__main__":
